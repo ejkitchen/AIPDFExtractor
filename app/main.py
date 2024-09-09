@@ -2,7 +2,7 @@ import streamlit as st
 from pathlib import Path
 import tempfile
 import logging
-import unidecode
+from unidecode import unidecode
 
 from utils import get_torch_gpu_info
 
@@ -11,7 +11,7 @@ from docling.document_converter import DocumentConverter
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s -> %(levelname)s -> %(name)s -> %(message)s",
+    format="%(asctime)s -> %(levelname)s -> %(name)s -> %(module)s:%(lineno)d -> %(message)s",
     datefmt="%a %b %d: %H:%M:%S",
     handlers=[
         logging.StreamHandler()
@@ -19,11 +19,28 @@ logging.basicConfig(
 )
 
 def perform_pdf_extraction(file_path: str) -> str:
-    converter = DocumentConverter()
-    doc = converter.convert_single(file_path)
-    output = doc.render_as_markdown()
-    output = unidecode(output)
-    return output
+    try:
+        logging.info(f"Performing PDF extraction for {file_path}")
+        logging.info(f"Loading DocumentConverter...")
+        converter = DocumentConverter()
+        logging.info(f"DocumentConverter loaded successfully")
+        logging.info(f"Converting document...")
+        doc = converter.convert_single(file_path)
+        logging.info(f"Document converted successfully")
+        
+        logging.info(f"Rendering document as markdown...")
+        output = doc.render_as_markdown()
+        logging.info(f"Output: {output}")
+
+        logging.info(f"Unidecoding output...")
+        output = unidecode(output)
+        logging.info(f"Output unidecoded successfully")
+        
+        return output
+    
+    except Exception as e:
+        logging.error(f"Error during PDF extraction: {str(e)}")
+        raise
 
 def show():
     st.set_page_config(page_title="AI PDF Extractor", page_icon="📄")
